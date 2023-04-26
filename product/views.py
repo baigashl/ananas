@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from .models import Product
 from .serializers import ProductSerializer
+from user.permissions import IsVendorPermission, IsOwnerOrReadOnly
 
 
 class ProductListAPIView(APIView):
@@ -17,7 +18,7 @@ class ProductListAPIView(APIView):
 
 
 class ProductCreateAPIView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated, IsVendorPermission]
 
     def post(self, request):
         serializer = ProductSerializer(data=request.data)
@@ -47,6 +48,41 @@ class ProductDetailAPIView(APIView):
         product = self.get_object(id)
         serializer = ProductSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProductUpdateAPIView(APIView):
+    permission_classes = [IsVendorPermission, IsOwnerOrReadOnly]
+
+    def get_object(self, id):
+        try:
+            return Product.objects.get(id=id)
+        except Product.DoesNotExist:
+            raise Http404
+
+    def put(self, request, id):
+        snippet = self.get_object(id)
+        serializer = ProductSerializer(snippet, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductDeleteAPIView(APIView):
+    permission_classes = [IsVendorPermission, IsOwnerOrReadOnly]
+
+    def get_object(self, id):
+        try:
+            return Product.objects.get(id=id)
+        except Product.DoesNotExist:
+            raise Http404
+
+    def delete(self, request, id):
+        snippet = self.get_object(id)
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 
 
 

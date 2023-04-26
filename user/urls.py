@@ -1,5 +1,12 @@
 from django.urls import path
-from .views import LoginView, VendorRegisterView, CustomerRegisterView, VendorListAPIView
+from .views import (
+    LoginView,
+    VendorRegisterView,
+    CustomerRegisterView,
+    VendorListAPIView,
+    VendorProfileAPIView,
+    VendorDetailAPIView,
+)
 
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
@@ -7,4 +14,8 @@ urlpatterns = [
     path('customer/register/', CustomerRegisterView.as_view(), name='customer-register'),
 
     path('vendor/list/', VendorListAPIView.as_view(), name='vendor-list'),
+
+    path('vendor/profile/<str:token>/', VendorProfileAPIView.as_view(), name='vendor-profile'),
+
+    path('vendor/detail/<int:id>/', VendorDetailAPIView.as_view(), name='vendor-detail'),
 ]

@@ -51,6 +51,12 @@ class VendorRegisterSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class VendorProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vendor
+        fields = '__all__'
+
+
 class CustomerRegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,

@@ -1,5 +1,5 @@
 from django.db import models
-from user.models import Vendor
+from user.models import Vendor, Customer
 
 
 class Category(models.Model):
@@ -18,4 +18,12 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Cart(models.Model):
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE)
+    product = models.ManyToManyField(Product)
+
+    def __str__(self):
+        return self.customer.email
 

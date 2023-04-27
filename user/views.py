@@ -10,7 +10,7 @@ from rest_framework_simplejwt import exceptions
 from .models import Vendor, Customer
 from .permissions import AnonPermissionOnly
 from .serializers import MyTokenObtainPairSerializer, VendorRegisterSerializer, CustomerRegisterSerializer, VendorProfileSerializer
-from product.models import Product
+from product.models import Product, Cart
 from product.serializers import ProductSerializer
 
 
@@ -60,7 +60,7 @@ class CustomerRegisterView(APIView):
     def post(self, request):
         serializer = CustomerRegisterSerializer(data=request.data)
         if serializer.is_valid():
-            vendor = Customer.objects.create(
+            customer = Customer.objects.create(
                 email=request.data['email'],
                 name=request.data['name'],
                 second_name=request.data['second_name'],
@@ -70,8 +70,12 @@ class CustomerRegisterView(APIView):
                 post_code=request.data['post_code'],
                 is_Vendor=False
             )
-            vendor.set_password(request.data['password'])
-            vendor.save()
+            customer.set_password(request.data['password'])
+            customer.save()
+            cart = Cart.objects.create(
+                customer=customer
+            )
+            cart.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -82,6 +86,15 @@ class VendorListAPIView(APIView):
     def get(self, request):
         vendors = Vendor.objects.all()
         serializer = VendorRegisterSerializer(vendors, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CustomerListAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        customer = Customer.objects.all()
+        serializer = CustomerRegisterSerializer(customer, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -97,8 +110,12 @@ class VendorProfileAPIView(APIView):
 
     def get(self, request, token):
         snippet = self.get_object(token)
+        products = Product.objects.filter(vendor=snippet)
         serializer = VendorProfileSerializer(snippet)
-        return Response(serializer.data)
+        serializer2 = ProductSerializer(products, many=True)
+        data = serializer.data
+        data['products'] = serializer2.data
+        return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request, token):
         snippet = self.get_object(token)

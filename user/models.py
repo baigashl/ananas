@@ -31,7 +31,7 @@ class Vendor(CustomUser):
     description = models.CharField(max_length=255, null=False, blank=False)
 
     def __str__(self):
-        return self.name, self.second_name
+        return self.name
 
 
 class Customer(CustomUser):

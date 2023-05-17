@@ -2,6 +2,7 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
+from rest_framework import generics
 
 from .models import Product, Category, Cart
 from .serializers import ProductSerializer, CartSerializer
@@ -9,13 +10,20 @@ from user.permissions import IsVendorPermission, IsOwnerOrReadOnly
 from user.serializers import CustomerRegisterSerializer
 
 
-class ProductListAPIView(APIView):
-    permission_classes = [permissions.AllowAny]
+# class ProductListAPIView(APIView):
+#     permission_classes = [permissions.AllowAny]
+#
+#     def get(self, request):
+#         all_product = Product.objects.all()
+#         serializer = ProductSerializer(all_product, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def get(self, request):
-        all_product = Product.objects.all()
-        serializer = ProductSerializer(all_product, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ProductListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+
 
 
 class ProductCreateAPIView(APIView):

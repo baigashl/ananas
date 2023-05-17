@@ -1,0 +1,56 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:12.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - my-network
+    env_file:
+      - ./.env
+
+
+  backend:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - static_volume:/app/backend/staticfiles
+      - media_volume:/app/backend/media
+    entrypoint: /app/docker/backend/wsgi-entrypoint.sh
+    networks:
+      - my-network
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  nginx:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./docker/nginx/dev:/etc/nginx/conf.d
+      - static_volume:/app/backend/staticfiles
+      - media_volume:/app/backend/media
+    networks:
+      - my-network
+    depends_on:
+      - backend
+      - db
+
+volumes:
+  media_volume:
+  static_volume:
+  postgres_data:
+
+networks:
+  my-network:
